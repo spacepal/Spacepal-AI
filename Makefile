@@ -1,13 +1,12 @@
-export GOPATH := $(shell pwd)
-PROD=./dist
-AISERVICE=./src/aiservice
-# FAKESERVER=./src/fakeserver
-all: deps build
+OUT=./dist/aiservice
+MAIN=./cmd/aiservice
+
+all: test build
 build:
-		rm "$(PROD)"/* -f -r
-		+$(MAKE) -C $(AISERVICE)
-		cp $(AISERVICE)/bin/* $(PROD) -f
-		# +$(MAKE) -C $(FAKESERVER)
-		# cp $(FAKESERVER)/bin/* $(PROD) -f
-deps:
-		./deps_install.sh
+	CGO_ENABLED=0 GOOS=linux go build \
+		-a -installsuffix cgo -ldflags '-extldflags "-static"' \
+		-o $(OUT) -v $(MAIN)
+test:
+	CGO_ENABLED=0 go test ./... -count=1 -covermode=atomic -v -tags=unit
+run:
+	CGO_ENABLED=0 go run $(MAIN)
